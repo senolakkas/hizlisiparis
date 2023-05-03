@@ -14,6 +14,11 @@ namespace Nop.Plugin.Tax.Avalara
         public static string SystemName => "Tax.Avalara";
 
         /// <summary>
+        /// Gets the user agent used to request third-party services
+        /// </summary>
+        public static string UserAgent => $"nopCommerce-{NopVersion.CURRENT_VERSION}";
+
+        /// <summary>
         /// Gets the Avalara tax provider connector name
         /// </summary>
         public static string ApplicationName => "nopCommerce-AvalaraTaxRateProvider|a0o33000004BoPM";
@@ -37,6 +42,11 @@ namespace Nop.Plugin.Tax.Avalara
         /// Gets the CertExpress default URL
         /// </summary>
         public static string CertExpressUrl => "https://app.certexpress.com/";
+
+        /// <summary>
+        /// Gets the item classification services URL
+        /// </summary>
+        public static string ClassificationUrl => "https://api-sandbox.classification.avalara.net/api/v2/companies";
 
         /// <summary>
         /// Gets the configuration route name
@@ -138,6 +148,16 @@ namespace Nop.Plugin.Tax.Avalara
         /// Gets the generic attribute name to hide general settings block on the plugin configuration page
         /// </summary>
         public static string HideGeneralBlock => "AvalaraPage.HideGeneralBlock";
+
+        /// <summary>
+        /// Gets the generic attribute name to hide item classification block on the plugin configuration page
+        /// </summary>
+        public static string HideItemClassificationBlock => "AvalaraPage.HideItemClassificationBlock";
+
+        /// <summary>
+        /// Gets the webhook route name
+        /// </summary>
+        public static string WebhookRouteName => "Plugin.Tax.Avalara.Webhook";
 
         /// <summary>
         /// Gets the generic attribute name to hide log block on the plugin configuration page

@@ -22,6 +22,10 @@ namespace Nop.Plugin.Tax.Avalara.Validators
                 .NotEmpty()
                 .WithMessageAwait(localizationService.GetResourceAsync("Plugins.Tax.Avalara.Fields.LicenseKey.Required"))
                 .When(model => !model.UseSandbox);
+            RuleFor(model => model.SelectedCountryIds)
+                .NotEmpty()
+                .WithMessageAwait(localizationService.GetResourceAsync("Plugins.Tax.Avalara.Fields.SelectedCountryIds.Required"))
+                .When(model => model.UseItemClassification);
         }
 
         #endregion
