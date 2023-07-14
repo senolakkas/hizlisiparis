@@ -1715,6 +1715,19 @@ namespace Nop.Plugin.Tax.Avalara.Services
                 if (string.IsNullOrEmpty(requestContent))
                     throw new NopException("Webhook request content is empty");
 
+                //log request
+                var stringBuilder = new StringBuilder();
+                stringBuilder.Append(nameof(request.Headers));
+                foreach (var header in request.Headers)
+                {
+                    stringBuilder.AppendLine($"{header.Key}: {header.Value}");
+                }
+                stringBuilder.AppendLine($"{nameof(request.Path)}: {request.Path}");
+                stringBuilder.AppendLine($"{nameof(request.QueryString)}: {request.QueryString}");
+                stringBuilder.AppendLine($"{nameof(request.Body)}: {requestContent}");
+
+                await _logger.InformationAsync($"{AvalaraTaxDefaults.SystemName} request info. {stringBuilder}", null, await _workContext.GetCurrentCustomerAsync());
+
                 //get webhook message
                 var message = JsonConvert.DeserializeObject<HSClassificationModel>(requestContent);
 
