@@ -31,22 +31,19 @@ namespace Nop.Plugin.Tax.Avalara
         /// <summary>
         /// Gets the certificates script source URL
         /// </summary>
-        public static string CertificatesScriptUrl => "https://app.certcapture.com/gencert2/js";
+        public static (string Sandbox, string Live) CertificatesScriptUrl =>
+            ("https://sbx.certcapture.com/gencert2/js", "https://app.certcapture.com/gencert2/js");
 
         /// <summary>
-        /// Gets the certificates sandbox script source URL
+        /// Gets the item classification services URL
         /// </summary>
-        public static string CertificatesSandboxScriptUrl => "https://sbx.certcapture.com/gencert2/js";
+        public static (string Sandbox, string Live) ClassificationUrl =>
+            ("https://api-sandbox.classification.avalara.net/", "https://api.classification.avalara.net/");
 
         /// <summary>
         /// Gets the CertExpress default URL
         /// </summary>
         public static string CertExpressUrl => "https://app.certexpress.com/";
-
-        /// <summary>
-        /// Gets the item classification services URL
-        /// </summary>
-        public static string ClassificationUrl => "https://api-sandbox.classification.avalara.net/api/v2/companies";
 
         /// <summary>
         /// Gets the configuration route name
@@ -57,6 +54,11 @@ namespace Nop.Plugin.Tax.Avalara
         /// Gets the tax categories list route name
         /// </summary>
         public static string TaxCategoriesRouteName => "Plugin.Tax.Avalara.Tax.Categories";
+
+        /// <summary>
+        /// Gets the webhook route name
+        /// </summary>
+        public static string ItemClassificationWebhookRouteName => "Plugin.Tax.Avalara.ItemClassificationWebhook";
 
         /// <summary>
         /// Gets the tax exemption certificates list route name
@@ -153,11 +155,6 @@ namespace Nop.Plugin.Tax.Avalara
         /// Gets the generic attribute name to hide item classification block on the plugin configuration page
         /// </summary>
         public static string HideItemClassificationBlock => "AvalaraPage.HideItemClassificationBlock";
-
-        /// <summary>
-        /// Gets the webhook route name
-        /// </summary>
-        public static string WebhookRouteName => "Plugin.Tax.Avalara.Webhook";
 
         /// <summary>
         /// Gets the generic attribute name to hide log block on the plugin configuration page

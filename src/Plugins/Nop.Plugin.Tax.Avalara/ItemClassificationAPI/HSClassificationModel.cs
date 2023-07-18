@@ -4,9 +4,9 @@ using Newtonsoft.Json.Converters;
 namespace Nop.Plugin.Tax.Avalara.ItemClassificationAPI
 {
     /// <summary>
-    /// HSClassificationModel
+    /// Represents classification model
     /// </summary>
-    public class HSClassificationModel
+    public class HSClassificationModel : Response
     {
         /// <summary>
         /// The id of the HS classification request. This id is created by CreateHSClassificationRequest and returned in the response
@@ -47,7 +47,7 @@ namespace Nop.Plugin.Tax.Avalara.ItemClassificationAPI
         /// Required
         /// </remarks>
         [JsonProperty(PropertyName = "status")]
-        public string Status { get; set; }
+        public ClassificationStatus Status { get; set; }
 
         /// <summary>
         /// This is the HS classification result. It’ll be returned in the body for GetHSClassification method

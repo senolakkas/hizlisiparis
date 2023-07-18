@@ -20,21 +20,19 @@ namespace Nop.Plugin.Tax.Avalara.Services
 
         #region Ctor
 
-        public ItemClassificationHttpClient(
-            AvalaraTaxSettings avalaraTaxSettings,
+        public ItemClassificationHttpClient(AvalaraTaxSettings avalaraTaxSettings,
             HttpClient httpClient)
         {
             //configure client
-            httpClient.BaseAddress = new Uri($"{AvalaraTaxDefaults.ClassificationUrl}/");
+            httpClient.BaseAddress = new Uri(avalaraTaxSettings.UseSandbox
+                ? AvalaraTaxDefaults.ClassificationUrl.Sandbox
+                : AvalaraTaxDefaults.ClassificationUrl.Live);
             httpClient.Timeout = TimeSpan.FromSeconds(10);
             httpClient.DefaultRequestHeaders.Add(HeaderNames.UserAgent, AvalaraTaxDefaults.UserAgent);
             httpClient.DefaultRequestHeaders.Add(HeaderNames.Accept, MimeTypes.ApplicationJson);
 
-            //avalaraTaxSettings.CompanyId, avalaraTaxSettings.LicenseKey);
-
             _avalaraTaxSettings = avalaraTaxSettings;
             _httpClient = httpClient;
-            
         }
 
         #endregion
@@ -44,7 +42,7 @@ namespace Nop.Plugin.Tax.Avalara.Services
         /// <summary>
         /// Set security using CompanyId / License Key
         /// </summary>
-        /// <returns>The asynchronous task whose result contains access token</returns>
+        /// <returns>Security token</returns>
         protected string PrepareSecurity()
         {
             if (_avalaraTaxSettings.CompanyId is null)
@@ -68,7 +66,7 @@ namespace Nop.Plugin.Tax.Avalara.Services
         /// <typeparam name="TResponse">Response type</typeparam>
         /// <param name="request">Request</param>
         /// <returns>The asynchronous task whose result contains response details</returns>
-        public async Task<HSClassificationModel> RequestAsync<TRequest>(TRequest request) where TRequest : Request
+        public async Task<TResponse> RequestAsync<TRequest, TResponse>(TRequest request) where TRequest : Request where TResponse : Response
         {
             try
             {
@@ -88,10 +86,24 @@ namespace Nop.Plugin.Tax.Avalara.Services
                 var httpResponse = await _httpClient.SendAsync(requestMessage);
 
                 //return result
+                TResponse result = null;
                 var responseString = await httpResponse.Content.ReadAsStringAsync();
-                var result = JsonConvert.DeserializeObject<Response>(responseString);
-                if (!string.IsNullOrEmpty(result.Error))
-                    throw new NopException($"Item HS classification error - {result.Error}");
+                try
+                {
+                    result = JsonConvert.DeserializeObject<TResponse>(responseString ?? string.Empty);
+                }
+                catch
+                {
+                    throw new NopException($"Item HS classification error: response content invalid - {responseString}");
+                }
+                if (!string.IsNullOrEmpty(result?.Error?.Code))
+                {
+                    var error = result.Error.Code;
+                    if (result.Error.Details?.Any() ?? false)
+                        error += result.Error.Details.Aggregate(string.Empty, (text, e) => $"{text}{e.Message} {e.Description};{Environment.NewLine}");
+
+                    throw new NopException($"Item HS classification error: {error}");
+                }
 
                 return result;
             }

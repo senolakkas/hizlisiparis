@@ -23,9 +23,9 @@ namespace Nop.Plugin.Tax.Avalara.Controllers
         #region Methods
 
         [HttpPost]
-        public async Task<IActionResult> Webhook()
+        public async Task<IActionResult> ItemClassificationWebhook()
         {
-            await _avalaraTaxManager.HandleWebhookAsync(Request);
+            await _avalaraTaxManager.HandleItemClassificationWebhookAsync(Request);
             return Ok();
         }
 

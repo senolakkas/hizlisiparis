@@ -1,6 +1,9 @@
 ﻿using FluentMigrator;
 using Nop.Data;
+using Nop.Data.Extensions;
+using Nop.Data.Mapping;
 using Nop.Data.Migrations;
+using Nop.Plugin.Tax.Avalara.Domain;
 using Nop.Services.Configuration;
 using Nop.Services.Localization;
 using Nop.Web.Framework.Extensions;
@@ -44,6 +47,9 @@ namespace Nop.Plugin.Tax.Avalara.Data
             if (!DataSettingsManager.IsDatabaseInstalled())
                 return;
 
+            if (!Schema.Table(NameCompatibilityManager.GetTableName(typeof(ItemClassification))).Exists())
+                Create.TableFor<ItemClassification>();
+
             //locales
             var (languageId, languages) = this.GetLanguageData();
 
@@ -54,7 +60,8 @@ namespace Nop.Plugin.Tax.Avalara.Data
                 ["Plugins.Tax.Avalara.Fields.UseItemClassification.Hint"] = "Item classification is when a harmonized system (HS) code is assigned to a product based on its physical properties. Avalara assigns HS codes to customer products through its item classification service.",
                 ["Plugins.Tax.Avalara.Fields.Countries"] = "Country of destination to HS classify",
                 ["Plugins.Tax.Avalara.Fields.Countries.Hint"] = "Add a countries where you collect tax.",
-                ["Plugins.Tax.Avalara.ItemClassification.ManualSync"] = "Manual synchronization",
+                ["Plugins.Tax.Avalara.Fields.Countries.Required"] = "Country of destination to HS classify is required",
+                ["Plugins.Tax.Avalara.ItemClassification.Sync"] = "Synchronization",
                 ["Plugins.Tax.Avalara.ItemClassification.Sync.Confirm"] = @"
                     <p>
                         You want to start classification products with the connected account.
@@ -63,7 +70,7 @@ namespace Nop.Plugin.Tax.Avalara.Data
                         Classification may take some time.
                     </p>",
                 ["Plugins.Tax.Avalara.ItemClassification.Sync.Success"] = "The launch of the product classification procedure was successful.",
-                ["Plugins.Tax.Avalara.ItemClassification.SyncNow"] = "Sync now",
+                ["Plugins.Tax.Avalara.ItemClassification.Sync.Button"] = "Sync now",
                 ["Plugins.Tax.Avalara.ItemClassification.Search.Country"] = "Country",
                 ["Plugins.Tax.Avalara.ItemClassification.Search.Country.Hint"] = "If an asterisk is selected, then this will apply to all products, regardless of the country.",
                 ["Plugins.Tax.Avalara.ItemClassification.Product"] = "Product",
@@ -73,9 +80,6 @@ namespace Nop.Plugin.Tax.Avalara.Data
                 ["Plugins.Tax.Avalara.ItemClassification.UpdatedDate"] = "Updated on",
                 ["Plugins.Tax.Avalara.ItemClassification.Deleted"] = "The item classification entry has been deleted successfully.",
                 ["Plugins.Tax.Avalara.ItemClassification.AddProduct"] = "Add product",
-                ["Plugins.Tax.Avalara.ItemClassification.AddProduct.Success"] = "Products successfully added",
-                ["Plugins.Tax.Avalara.ItemClassification.AddProduct.Warning"] = "{0} products were not added because theiy already exist",
-                ["Plugins.Tax.Avalara.Fields.SelectedCountryIds.Required"] = "Country of destination to HS classify is required",
             }, languageId);
 
             //settings

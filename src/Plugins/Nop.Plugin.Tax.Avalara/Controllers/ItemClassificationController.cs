@@ -37,7 +37,7 @@ namespace Nop.Plugin.Tax.Avalara.Controllers
 
         #region Ctor
 
-        public ItemClassificationController(AvalaraTaxManager avalaraTaxManager, 
+        public ItemClassificationController(AvalaraTaxManager avalaraTaxManager,
             IBaseAdminModelFactory baseAdminModelFactory,
             ICountryService countryService,
             IDateTimeHelper dateTimeHelper,
@@ -72,7 +72,7 @@ namespace Nop.Plugin.Tax.Avalara.Controllers
 
             //get item classification
             var itemClassification = await _itemClassificationService.GetItemClassificationAsync(
-                pageIndex: searchModel.Page - 1, 
+                pageIndex: searchModel.Page - 1,
                 pageSize: searchModel.PageSize,
                 countryId: searchModel.SearchCountryId,
                 productId: null);
@@ -102,12 +102,12 @@ namespace Nop.Plugin.Tax.Avalara.Controllers
             if (!await _permissionService.AuthorizeAsync(StandardPermissionProvider.ManageTaxSettings))
                 return await AccessDeniedDataTablesJson();
 
-            var productRecord = await _itemClassificationService.GetItemClassificationByIdAsync(model.Id)
+            var item = await _itemClassificationService.GetItemClassificationByIdAsync(model.Id)
                 ?? throw new ArgumentException("No record found");
 
-            productRecord.HSCode = model.HSCode;
+            item.HSCode = model.HSCode;
 
-            await _itemClassificationService.UpdateItemClassificationAsync(productRecord);
+            await _itemClassificationService.UpdateItemClassificationAsync(item);
 
             return new NullJsonResult();
         }
@@ -125,13 +125,13 @@ namespace Nop.Plugin.Tax.Avalara.Controllers
 
             foreach (var id in selectedIds)
             {
-                var productRecord = await _itemClassificationService.GetItemClassificationByIdAsync(id);
-                if (productRecord is null)
+                var item = await _itemClassificationService.GetItemClassificationByIdAsync(id);
+                if (item is null)
                     continue;
 
-                recordsToDelete.Add(productRecord.Id);
+                recordsToDelete.Add(item.Id);
             }
-            await _itemClassificationService.DeleteRecordsAsync(recordsToDelete);
+            await _itemClassificationService.DeleteItemsAsync(recordsToDelete);
 
             return new NullJsonResult();
         }
@@ -148,7 +148,7 @@ namespace Nop.Plugin.Tax.Avalara.Controllers
 
         public async Task<IActionResult> ProductToClassification()
         {
-            if (!await _permissionService.AuthorizeAsync(StandardPermissionProvider.ManagePlugins))
+            if (!await _permissionService.AuthorizeAsync(StandardPermissionProvider.ManageTaxSettings))
                 return AccessDeniedView();
 
             if (!await _permissionService.AuthorizeAsync(StandardPermissionProvider.ManageProducts))
@@ -168,7 +168,7 @@ namespace Nop.Plugin.Tax.Avalara.Controllers
         [HttpPost]
         public async Task<IActionResult> ProductListToClassification(AddProductToClassificationSearchModel searchModel)
         {
-            if (!await _permissionService.AuthorizeAsync(StandardPermissionProvider.ManagePlugins))
+            if (!await _permissionService.AuthorizeAsync(StandardPermissionProvider.ManageTaxSettings))
                 return await AccessDeniedDataTablesJson();
 
             if (!await _permissionService.AuthorizeAsync(StandardPermissionProvider.ManageProducts))
@@ -202,20 +202,13 @@ namespace Nop.Plugin.Tax.Avalara.Controllers
         [FormValueRequired("save")]
         public async Task<IActionResult> ProductToClassification(AddProductToClassificationModel model)
         {
-            if (!await _permissionService.AuthorizeAsync(StandardPermissionProvider.ManagePlugins))
+            if (!await _permissionService.AuthorizeAsync(StandardPermissionProvider.ManageTaxSettings))
                 return AccessDeniedView();
 
             if (!await _permissionService.AuthorizeAsync(StandardPermissionProvider.ManageProducts))
                 return AccessDeniedView();
 
-            var notAddedProducts = await _itemClassificationService.InsertItemClassificationAsync(model.SelectedProductIds?.ToList());
-            if (notAddedProducts > 0)
-            {
-                var warning = await _localizationService.GetResourceAsync("Plugins.Tax.Avalara.ItemClassification.AddProduct.Warning");
-                _notificationService.WarningNotification(string.Format(warning, notAddedProducts));
-            }
-            else
-                _notificationService.SuccessNotification(await _localizationService.GetResourceAsync("Plugins.Tax.Avalara.ItemClassification.AddProduct.Success"));
+            await _itemClassificationService.AddItemClassificationAsync(model.SelectedProductIds?.ToList());
 
             ViewBag.RefreshPage = true;
 
@@ -224,17 +217,22 @@ namespace Nop.Plugin.Tax.Avalara.Controllers
 
         public async Task<IActionResult> StartClassification()
         {
-            //ensure that Avalara tax provider is active
-            if (!await _taxPluginManager.IsPluginActiveAsync(AvalaraTaxDefaults.SystemName))
-                return RedirectToAction("Configure", "Avalara");
-
-            if (!await _permissionService.AuthorizeAsync(StandardPermissionProvider.ManagePlugins))
+            if (!await _permissionService.AuthorizeAsync(StandardPermissionProvider.ManageTaxSettings))
                 return await AccessDeniedDataTablesJson();
 
-            var items = (await _itemClassificationService.GetItemClassificationAsync()).Where(x => string.IsNullOrEmpty(x.HSClassificationRequestId)).ToList();
+            var items = (await _itemClassificationService.GetItemClassificationAsync())
+                .Where(x => string.IsNullOrEmpty(x.HSClassificationRequestId))
+                .ToList();
             foreach (var item in items)
             {
-                await _avalaraTaxManager.ClassificationProductsAsync(item);
+                var classification = await _avalaraTaxManager.ClassificationProductsAsync(item);
+                if (!string.IsNullOrEmpty(classification?.Id))
+                {
+                    //save classification id for future use (get hsCode)
+                    item.HSClassificationRequestId = classification?.Id;
+                    item.UpdatedOnUtc = DateTime.UtcNow;
+                    await _itemClassificationService.UpdateItemClassificationAsync(item);
+                }
             }
 
             _notificationService.SuccessNotification(await _localizationService.GetResourceAsync("Plugins.Tax.Avalara.ItemClassification.Sync.Success"));

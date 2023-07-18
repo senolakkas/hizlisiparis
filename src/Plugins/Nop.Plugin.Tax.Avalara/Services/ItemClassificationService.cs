@@ -18,7 +18,7 @@ namespace Nop.Plugin.Tax.Avalara.Services
 
         #region Ctor
 
-        public ItemClassificationService(AvalaraTaxSettings avalaraTaxSettings, 
+        public ItemClassificationService(AvalaraTaxSettings avalaraTaxSettings,
             IRepository<ItemClassification> itemClassificationRepository)
         {
             _avalaraTaxSettings = avalaraTaxSettings;
@@ -38,7 +38,7 @@ namespace Nop.Plugin.Tax.Avalara.Services
         /// <param name="pageSize">Page size</param>
         /// <returns>
         /// A task that represents the asynchronous operation
-        /// The task result contains the paged list of tax transaction log items
+        /// The task result contains the paged list of classification items
         /// </returns>
         public async Task<IPagedList<ItemClassification>> GetItemClassificationAsync(int? countryId = null,
             int? productId = null,
@@ -56,20 +56,18 @@ namespace Nop.Plugin.Tax.Avalara.Services
                 query = query.Where(item => item.ProductId == productId);
 
             //order item records
-            query = query.OrderByDescending(item => item.UpdatedOnUtc).ThenByDescending(logItem => logItem.Id);
+            query = query.OrderByDescending(item => item.UpdatedOnUtc).ThenByDescending(item => item.Id);
 
-            //return paged log
             return await query.ToPagedListAsync(pageIndex, pageSize);
         }
 
-
         /// <summary>
-        /// Get a item classification by the identifier
+        /// Get item classification by the identifier
         /// </summary>
         /// <param name="itemId">Item identifier</param>
         /// <returns>
         /// A task that represents the asynchronous operation
-        /// The task result contains the log item
+        /// The task result contains the item classification
         /// </returns>
         public async Task<ItemClassification> GetItemClassificationByIdAsync(int itemId)
         {
@@ -77,13 +75,30 @@ namespace Nop.Plugin.Tax.Avalara.Services
         }
 
         /// <summary>
-        /// Insert the item classification
+        /// Get item classification by the request identifier
+        /// </summary>
+        /// <param name="requestId">Request identifier</param>
+        /// <returns>
+        /// A task that represents the asynchronous operation
+        /// The task result contains the item classification
+        /// </returns>
+        public async Task<ItemClassification> GetItemClassificationByRequestIdAsync(string requestId)
+        {
+            if (string.IsNullOrEmpty(requestId))
+                return null;
+
+            return await _itemClassificationRepository.Table
+                .FirstOrDefaultAsync(item => requestId.Equals(item.HSClassificationRequestId, StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        /// <summary>
+        /// Add items for classification
         /// </summary>
         /// <param name="productIds">Product identifiers</param>
         /// <returns>A task that represents the asynchronous operation
         /// The task result contains the number of products that were not added
         /// </returns>
-        public async Task<int?> InsertItemClassificationAsync(List<int> productIds)
+        public async Task<int?> AddItemClassificationAsync(List<int> productIds)
         {
             if (!productIds?.Any() ?? true)
                 return productIds.Count;
@@ -92,21 +107,18 @@ namespace Nop.Plugin.Tax.Avalara.Services
             if (!newProductIds.Any())
                 return productIds.Count;
 
-            var countyIds = _avalaraTaxSettings.SelectedCountryIds;
-            if (!countyIds?.Any() ?? true)
+            if (!_avalaraTaxSettings.SelectedCountryIds?.Any() ?? true)
                 return productIds.Count;
 
-            foreach (var countryId in countyIds)
-                foreach (var productId in newProductIds)
-                {
-                    var record = new ItemClassification { 
-                        CountryId = countryId, 
-                        ProductId = productId, 
-                        UpdatedOnUtc = DateTime.UtcNow,
-                    };
+            var records = _avalaraTaxSettings.SelectedCountryIds.SelectMany(countryId => newProductIds.Select(productId => new ItemClassification
+            {
+                CountryId = countryId,
+                ProductId = productId,
+                UpdatedOnUtc = DateTime.UtcNow,
+            }));
 
-                    await _itemClassificationRepository.InsertAsync(record, false);
-                }
+            await _itemClassificationRepository.InsertAsync(records.ToList(), false);
+
             return productIds.Count - newProductIds.Count;
         }
 
@@ -124,11 +136,11 @@ namespace Nop.Plugin.Tax.Avalara.Services
         }
 
         /// <summary>
-        /// Delete records
+        /// Delete items
         /// </summary>
         /// <param name="ids">Items identifiers</param>
         /// <returns>A task that represents the asynchronous operation</returns>
-        public async Task DeleteRecordsAsync(List<int> ids)
+        public async Task DeleteItemsAsync(List<int> ids)
         {
             await _itemClassificationRepository.DeleteAsync(item => ids.Contains(item.Id));
         }

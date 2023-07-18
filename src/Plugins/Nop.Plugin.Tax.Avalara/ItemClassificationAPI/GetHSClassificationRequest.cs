@@ -26,7 +26,7 @@ namespace Nop.Plugin.Tax.Avalara.ItemClassificationAPI
         /// <summary>
         /// Gets the request path
         /// </summary>
-        public override string Path => $"{CompanyId}/classifications/hs/{HSClassificationId}";
+        public override string Path => $"api/v2/companies/{CompanyId}/classifications/hs/{HSClassificationId}";
 
         /// <summary>
         /// Gets the request method

@@ -121,10 +121,11 @@ namespace Nop.Plugin.Tax.Avalara.Controllers
             await _baseAdminModelFactory.PrepareCountriesAsync(model.AvailableCountries, false);
 
             //prepare item classification search model
-            model.ItemClassificationSearchModel.AvailableCountries.Add(new SelectListItem { Text = "*", Value = "0" });
-            var countries = await _countryService.GetAllCountriesAsync();
-            foreach (var c in countries)
-                model.ItemClassificationSearchModel.AvailableCountries.Add(new SelectListItem { Text = c.Name, Value = c.Id.ToString() });
+            model.ItemClassificationSearchModel.AvailableCountries = (await _countryService
+                .GetCountriesByIdsAsync(_avalaraTaxSettings.SelectedCountryIds?.ToArray()))
+                .Select(country => new SelectListItem(country.Name, country.Id.ToString()))
+                .ToList();
+            model.ItemClassificationSearchModel.AvailableCountries.Insert(0, new SelectListItem { Text = "*", Value = "0" });
 
             model.ItemClassificationSearchModel.SetGridPageSize();
 

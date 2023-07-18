@@ -277,6 +277,7 @@ namespace Nop.Plugin.Tax.Avalara
                 ["Plugins.Tax.Avalara.Fields.Company.NotExist"] = "There are no active companies",
                 ["Plugins.Tax.Avalara.Fields.Countries"] = "Country of destination to HS classify",
                 ["Plugins.Tax.Avalara.Fields.Countries.Hint"] = "Add a countries where you collect tax.",
+                ["Plugins.Tax.Avalara.Fields.Countries.Required"] = "Country of destination to HS classify is required",
                 ["Plugins.Tax.Avalara.Fields.CustomerRoles"] = "Limited to customer roles",
                 ["Plugins.Tax.Avalara.Fields.CustomerRoles.Hint"] = "Select customer roles for which exemption certificates will be available. Leave empty if you want this feature to be available to all customers.",
                 ["Plugins.Tax.Avalara.Fields.DisplayNoValidCertificatesMessage"] = "Display 'No valid certificates' message",
@@ -294,7 +295,6 @@ namespace Nop.Plugin.Tax.Avalara
                 ["Plugins.Tax.Avalara.Fields.LicenseKey"] = "License key",
                 ["Plugins.Tax.Avalara.Fields.LicenseKey.Hint"] = "Specify Avalara account license key.",
                 ["Plugins.Tax.Avalara.Fields.LicenseKey.Required"] = "Account license key is required",
-                ["Plugins.Tax.Avalara.Fields.SelectedCountryIds.Required"] = "Country of destination to HS classify is required",
                 ["Plugins.Tax.Avalara.Fields.TaxCodeDescription"] = "Description",
                 ["Plugins.Tax.Avalara.Fields.TaxCodeType"] = "Type",
                 ["Plugins.Tax.Avalara.Fields.TaxCodeType.Hint"] = "Choose a tax code type.",
@@ -312,9 +312,6 @@ namespace Nop.Plugin.Tax.Avalara
                 ["Plugins.Tax.Avalara.Fields.ValidateAddress.Hint"] = "Determine whether to validate entered by customer addresses before the tax calculation.",
                 ["Plugins.Tax.Avalara.ItemClassification"] = "Item Classification",
                 ["Plugins.Tax.Avalara.ItemClassification.AddProduct"] = "Add product",
-                ["Plugins.Tax.Avalara.ItemClassification.AddProduct.Success"] = "Products successfully added",
-                ["Plugins.Tax.Avalara.ItemClassification.AddProduct.Warning"] = "{0} products were not added because theiy already exist",
-                ["Plugins.Tax.Avalara.ItemClassification.ManualSync"] = "Manual synchronization",
                 ["Plugins.Tax.Avalara.ItemClassification.Product"] = "Product",
                 ["Plugins.Tax.Avalara.ItemClassification.Country"] = "Country",
                 ["Plugins.Tax.Avalara.ItemClassification.Deleted"] = "The item classification entry has been deleted successfully.",
@@ -323,6 +320,7 @@ namespace Nop.Plugin.Tax.Avalara
                 ["Plugins.Tax.Avalara.ItemClassification.UpdatedDate"] = "Updated on",
                 ["Plugins.Tax.Avalara.ItemClassification.Search.Country"] = "Country",
                 ["Plugins.Tax.Avalara.ItemClassification.Search.Country.Hint"] = "If an asterisk is selected, then this will apply to all products, regardless of the country.",
+                ["Plugins.Tax.Avalara.ItemClassification.Sync"] = "Synchronization",
                 ["Plugins.Tax.Avalara.ItemClassification.Sync.Confirm"] = @"
                     <p>
                         You want to start classification products with the connected account.
@@ -331,7 +329,7 @@ namespace Nop.Plugin.Tax.Avalara
                         Classification may take some time.
                     </p>",
                 ["Plugins.Tax.Avalara.ItemClassification.Sync.Success"] = "The launch of the product classification procedure was successful.",
-                ["Plugins.Tax.Avalara.ItemClassification.SyncNow"] = "Sync now",
+                ["Plugins.Tax.Avalara.ItemClassification.Sync.Button"] = "Sync now",
                 ["Plugins.Tax.Avalara.Items.Export"] = "Export to Avalara (selected)",
                 ["Plugins.Tax.Avalara.Items.Export.AlreadyExported"] = "Selected products have already been exported",
                 ["Plugins.Tax.Avalara.Items.Export.Error"] = "An error has occurred on export products",
