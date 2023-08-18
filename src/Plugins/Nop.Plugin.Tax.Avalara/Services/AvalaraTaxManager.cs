@@ -165,6 +165,50 @@ namespace Nop.Plugin.Tax.Avalara.Services
         }
 
         /// <summary>
+        /// Handle function and get result with Error message in view
+        /// </summary>
+        /// <typeparam name="TResult">Result type</typeparam>
+        /// <param name="function">Function</param>
+        /// <returns>
+        /// A task that represents the asynchronous operation
+        /// The task result contains the result
+        /// </returns>
+        protected async Task<(TResult Result, string Error)> HandleFunctionExAsync<TResult>(Func<Task<TResult>> function)
+        {
+            try
+            {
+                //ensure that Avalara tax provider is configured
+                if (!IsConfigured())
+                    throw new NopException("Tax provider is not configured");
+
+                return (await function(), default);
+            }
+            catch (Exception exception)
+            {
+                //compose an error message
+                var errorMessage = exception.Message;
+                if (exception is AvaTaxError avaTaxError && avaTaxError.error != null)
+                {
+                    var errorInfo = avaTaxError.error.error;
+                    if (errorInfo != null)
+                    {
+                        errorMessage = $"{errorInfo.code} - {errorInfo.message}{Environment.NewLine}";
+                        if (errorInfo.details?.Any() ?? false)
+                        {
+                            var errorDetails = errorInfo.details.Aggregate(string.Empty, (error, detail) => $"{error}{detail.description}{Environment.NewLine}");
+                            errorMessage = $"{errorMessage} Details: {errorDetails}";
+                        }
+                    }
+                }
+
+                //log errors
+                await _logger.ErrorAsync($"{AvalaraTaxDefaults.SystemName} error. {errorMessage}", exception, await _workContext.GetCurrentCustomerAsync());
+
+                return (default, errorMessage);
+            }
+        }
+
+        /// <summary>
         /// Handle function and get result
         /// </summary>
         /// <typeparam name="TResult">Result type</typeparam>
@@ -1695,9 +1739,9 @@ namespace Nop.Plugin.Tax.Avalara.Services
         /// A task that represents the asynchronous operation
         /// The task result contains the classification results
         /// </returns>
-        public async Task<HSClassificationModel> ClassificationProductsAsync(ItemClassification item)
+        public async Task<(HSClassificationModel model, string Error)> ClassificationProductsAsync(ItemClassification item)
         {
-            return await HandleFunctionAsync(async () =>
+            return await HandleFunctionExAsync(async () =>
             {
                 if (_avalaraTaxSettings.CompanyId is null)
                     throw new NopException("Company not selected");

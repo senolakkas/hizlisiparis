@@ -189,8 +189,17 @@
                                         error: function (jqXHR, textStatus, errorThrown) {
                                             showAlert('sync-failed', errorThrown);
                                         },
+                                        success: function (data, textStatus, jqXHR) {
+                                            if (typeof (data) != 'undefined' && data != null && data.success) {
+                                                showAlert('sync-success', data.message);
+                                            }
+                                            else {
+                                                showAlert('sync-failed', data.message);
+                                            }
+                                        },
                                         complete: function (jqXHR, textStatus) {
-                                            window.location = window.location.href;
+                                            updateTable('#item-classification-grid');
+                                            //window.location = window.location.href;
                                         }
                                     });
                                     $('#start-sync-action-confirmation').modal('toggle');
@@ -256,3 +265,4 @@
 <nop-alert asp-alert-id="delete-selected-items-failed" />
 <nop-alert asp-alert-id="clear-all-items-failed" />
 <nop-alert asp-alert-id="sync-failed" />
+<nop-alert asp-alert-id="sync-success" />

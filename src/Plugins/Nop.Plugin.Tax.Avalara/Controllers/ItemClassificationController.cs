@@ -221,11 +221,16 @@ namespace Nop.Plugin.Tax.Avalara.Controllers
                 return await AccessDeniedDataTablesJson();
 
             var items = (await _itemClassificationService.GetItemClassificationAsync())
-                .Where(x => string.IsNullOrEmpty(x.HSClassificationRequestId))
-                .ToList();
+            .Where(x => string.IsNullOrEmpty(x.HSClassificationRequestId))
+            .ToList();
             foreach (var item in items)
             {
-                var classification = await _avalaraTaxManager.ClassificationProductsAsync(item);
+                var (classification, error) = await _avalaraTaxManager.ClassificationProductsAsync(item);
+                if (!string.IsNullOrEmpty(error))
+                {
+                    return Json(new { success = false, message = error });
+                }
+
                 if (!string.IsNullOrEmpty(classification?.Id))
                 {
                     //save classification id for future use (get hsCode)
@@ -235,9 +240,7 @@ namespace Nop.Plugin.Tax.Avalara.Controllers
                 }
             }
 
-            _notificationService.SuccessNotification(await _localizationService.GetResourceAsync("Plugins.Tax.Avalara.ItemClassification.Sync.Success"));
-
-            return RedirectToAction("Configure", "Avalara");
+            return Json(new { success = true, message = await _localizationService.GetResourceAsync("Plugins.Tax.Avalara.ItemClassification.Sync.Success") });
         }
 
         #endregion
