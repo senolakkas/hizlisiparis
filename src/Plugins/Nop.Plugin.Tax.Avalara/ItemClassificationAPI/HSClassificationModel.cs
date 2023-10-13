@@ -47,7 +47,7 @@ namespace Nop.Plugin.Tax.Avalara.ItemClassificationAPI
         /// Required
         /// </remarks>
         [JsonProperty(PropertyName = "status")]
-        public ClassificationStatus Status { get; set; }
+        public string Status { get; set; }
 
         /// <summary>
         /// This is the HS classification result. It’ll be returned in the body for GetHSClassification method

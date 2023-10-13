@@ -45,13 +45,13 @@ namespace Nop.Plugin.Tax.Avalara.Services
         /// <returns>Security token</returns>
         protected string PrepareSecurity()
         {
-            if (_avalaraTaxSettings.CompanyId is null)
-                throw new NopException("Company not selected");
+            if (_avalaraTaxSettings.AccountId is null)
+                throw new NopException("AccountId not set");
 
             if (_avalaraTaxSettings.LicenseKey is null)
                 throw new NopException("LicenseKey is not set");
 
-            var s = $"{_avalaraTaxSettings.CompanyId}:{_avalaraTaxSettings.LicenseKey}";
+            var s = $"{_avalaraTaxSettings.AccountId}:{_avalaraTaxSettings.LicenseKey}";
             return Convert.ToBase64String(Encoding.UTF8.GetBytes(s));
         }
 
@@ -92,9 +92,9 @@ namespace Nop.Plugin.Tax.Avalara.Services
                 {
                     result = JsonConvert.DeserializeObject<TResponse>(responseString ?? string.Empty);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    throw new NopException($"Item HS classification error: response content invalid - {responseString}");
+                    throw new NopException($"Item HS classification error: response content invalid - {ex.Message}");
                 }
                 if (!string.IsNullOrEmpty(result?.Error?.Code))
                 {
