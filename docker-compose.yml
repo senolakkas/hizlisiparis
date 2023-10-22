@@ -3,17 +3,34 @@ services:
     nopcommerce_web:
         build: .
         container_name: nopcommerce
-        ports:
-            - "80:80"
+        # ports:
+        #     - "8081:80"
         depends_on:
             - nopcommerce_database
     nopcommerce_database:
-        image: "mcr.microsoft.com/mssql/server:2019-latest"
-        container_name: nopcommerce_mssql_server
+        image: "postgres:latest"
+        container_name: nopcommerce_database
+        restart: "always"
+        ports:
+            - "5432:5432"
+        volumes:
+            - postgres-data:/var/lib/postgresql/data
         environment:
-            SA_PASSWORD: "nopCommerce_db_password"
-            ACCEPT_EULA: "Y"
-            MSSQL_PID: "Express"
+          POSTGRES_PASSWORD: "nopCommerce"
+          POSTGRES_USER: "nopCommerce"
+          POSTGRES_DB: "nopCommerce"
+    reverse-proxy:
+        image: nginx:1.17.10
+        container_name: reverse_proxy
+        depends_on:
+            - nopcommerce_web
+        volumes:
+          - ./nginx.conf:/etc/nginx/nginx.conf
+        ports:
+          - 80:80
+
 
 volumes:
-  nopcommerce_data:            
+  nopcommerce_data:  
+  postgres-data:
+    external: true
